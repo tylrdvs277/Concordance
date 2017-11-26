@@ -60,18 +60,21 @@ class HashTableLinPr:
         filtered = [entry for entry in self.table if entry]
         alphabetical = self.sort(filtered)
         out_file = open(outputfilename, "w")
-        for entry in alphabetical:
-            out_file.write(entry[0] + ":")
-            for line_num in entry[1]:
-                out_file.write(" {0}".format(line_num))
-            out_file.write("\n")
+        for idx in range(len(alphabetical)):
+            out_file.write(alphabetical[idx][0] + ":\t")
+            for line_num_idx in range(len(alphabetical[idx][1])):
+                out_file.write(str(alphabetical[idx][1][line_num_idx]))
+                if line_num_idx < len(alphabetical[idx][1]) - 1:
+                    out_file.write(" ")
+            if idx < len(alphabetical) - 1:
+                out_file.write("\n")
         out_file.close()
 
     def sort(self, tlist, place = 0):
         buckets = [[] for _ in range(27)]
         done = True
         for entry in tlist:
-            if place <= len(entry[0]) - 1:
+            if place < len(entry[0]):
                 done = False
                 buckets[ord(entry[0][place]) - ord("a") + 1].append(entry)
             else:
@@ -108,7 +111,9 @@ class HashTableLinPr:
         self.num_items += 1
         if self.get_load_factor() > 0.5:
             self.grow_table()
-        self.table[idx] = (word, [line])
+            self[word] = line
+        else:
+            self.table[idx] = (word, [line])
 
     def __setitem__(self, key, data):
         self.insert(key, data)
@@ -122,11 +127,3 @@ class HashTableLinPr:
                     idx = (idx + self.step) % len(new_table)
                 new_table[idx] = entry
         self.table = new_table
-
-
-def build_concordance(read_file, stop_words = "stop_words.txt"):
-    stop_hash = HashTableLinPr()
-    stop_hash.read_stop(stop_words)
-    concordance = HashTableLinPr()
-    concordance.read_file(read_file, stop_hash)
-    concordance.save_concordance("test.txt")
