@@ -29,9 +29,12 @@ class HashTableQuadPr:
 
     def read_stop(self, filename):
         stop_file = open(filename, "r")
-        for word in stop_file:
-            word = word.strip()
-            self[word] = None
+        for line in stop_file:
+            line = self.remove_punctuation(line.strip())
+            for word in line.split(" "):
+                word = word.lower()
+                if word and word not in self:
+                    self[word] = None
         stop_file.close()
 
     def read_file(self, filename, stop_table):
@@ -42,7 +45,7 @@ class HashTableQuadPr:
             for word in line.split(" "):
                 word = word.lower()
                 if word and word not in stop_table:
-                    self[word] = line_num
+                    self[word] = str(line_num)
             line_num += 1
         read_file.close()
 
@@ -64,10 +67,7 @@ class HashTableQuadPr:
         out_file = open(outputfilename, "w")
         for idx in range(len(alphabetical)):
             out_file.write(alphabetical[idx][0] + ":\t")
-            for line_num_idx in range(len(alphabetical[idx][1])):
-                out_file.write(str(alphabetical[idx][1][line_num_idx]))
-                if line_num_idx < len(alphabetical[idx][1]) - 1:
-                    out_file.write(" ")
+            out_file.write(" ".join(alphabetical[idx][1]))
             if idx < len(alphabetical) - 1:
                 out_file.write("\n")
         out_file.close()
@@ -108,7 +108,8 @@ class HashTableQuadPr:
         i = 1
         while self.table[idx]:
             if self.table[idx][0] == word:
-                self.table[idx][1].append(line)
+                if line not in self.table[idx][1]:
+                    self.table[idx][1].append(line)
                 return
             idx = (idx + i ** 2 - (i - 1) ** 2) % len(self)
             i += 1
